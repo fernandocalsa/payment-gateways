@@ -1,6 +1,5 @@
 const { Router } = require('express');
 const Payment = require('../models/Payment');
-const paymentGateways = require('../gateways');
 
 const paymentsRouter = Router();
 
@@ -16,21 +15,34 @@ paymentsRouter.route('/')
       concept,
       gatewayId,
     } = req.body;
-    const payment = new Payment(userId, amount, concept);
-    const paymentGateway = paymentGateways[gatewayId];
-    if (!paymentGateway) {
-      return res.status(500).json({
-        error: 'gateway not found',
-      });
-    }
-    await payment.execute(paymentGateway);
-    res.json({ payment });
+    const payment = new Payment(userId, gatewayId, amount, concept);
+    await payment.execute();
+    return res.json({ payment });
   });
 
 paymentsRouter.get('/:paymentId', async (req, res) => {
   const { paymentId } = req.params;
-  const payment = await Payment.findById(paymentId);
-  res.json({ payment });
+  try {
+    const payment = await Payment.findById(parseInt(paymentId, 10));
+    res.json({ payment });
+  } catch (err) {
+    res.status(404).json({
+      err: 'Payment not found',
+    });
+  }
+});
+
+paymentsRouter.post('/:paymentId/reimburse', async (req, res) => {
+  const { paymentId } = req.params;
+  try {
+    const payment = await Payment.findById(parseInt(paymentId, 10));
+    await payment.reimburse();
+    res.json({ payment });
+  } catch (err) {
+    res.status(404).json({
+      err: 'Payment not found',
+    });
+  }
 });
 
 module.exports = paymentsRouter;

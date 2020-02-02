@@ -1,11 +1,18 @@
 // This is the model that connects with the database. In this case the database is just an array
+const paymentGateways = require('../gateways');
+
 const payments = [];
 
 class Payment {
-  constructor(userId, amount, concept) {
+  constructor(userId, gatewayId, amount, concept) {
     this.user = userId;
     this.amount = amount;
     this.concept = concept;
+    const gateway = paymentGateways[gatewayId];
+    if (!gateway) {
+      throw new Error('No gateway found');
+    }
+    this.gateway = gateway.id;
   }
 
   save() {
@@ -24,15 +31,29 @@ class Payment {
     return Promise.resolve(this);
   }
 
-  async execute(gateway) {
+  async execute() {
     try {
+      const gateway = paymentGateways[this.gateway];
       const gatewayPaymentId = await gateway.pay();
       this.gatewayPaymentId = gatewayPaymentId;
-      this.gateway = gateway.id;
       this.status = 'paid';
       this.datePaid = new Date();
     } catch (err) {
       this.err = 'Error while executing payment';
+      this.status = 'error';
+      this.errDate = new Date();
+    }
+    return this.save();
+  }
+
+  async reimburse() {
+    const gateway = paymentGateways[this.gateway];
+    try {
+      await gateway.reimburse();
+      this.status = 'reimburse';
+      this.reimburseDate = new Date();
+    } catch (err) {
+      this.err = 'Error while reimburse payment';
       this.status = 'error';
       this.errDate = new Date();
     }
