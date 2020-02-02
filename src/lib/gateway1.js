@@ -2,7 +2,7 @@
 const uuidv1 = require('uuid/v1');
 
 module.exports = {
-  executePayment: () => Promise.resolve(uuidv1),
+  executePayment: () => Promise.resolve(uuidv1()),
   reimburse: () => Promise.resolve(),
   partialReimburse: () => Promise.resolve(),
 };
