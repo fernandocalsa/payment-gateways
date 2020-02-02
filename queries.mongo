@@ -1,0 +1,60 @@
+1. Todos los pokemon que tengan 1 o más evoluciones, se debe proporcionar por cada evolución: nombre, número y spawn time.
+	Tiempo aproximado: 15-30 minutos
+
+db.samples_pokemon.aggregate([
+  {
+    $match: {
+        "next_evolution.0": {
+            $exists: true
+        }
+    }
+  },
+  {
+    $lookup: {
+        from: 'samples_pokemon',
+        localField: 'next_evolution.num',
+        foreignField: 'num',
+        as: 'evolutions'
+    }
+  },
+  {
+    $project: {
+        evolutions: {
+            name: 1,
+            num: 1,
+            spawn_time: 1
+        }
+    }
+  }
+]);
+
+
+
+2. Todos los pokemon de primera evolución que tengan alguna evolución con un avg spawn mayor de 4, se necesita el nombre y número de cada pokemon que cumpla.
+	Tiempo aproximado: 1-2h
+db.samples_pokemon.aggregate([{
+    $match: {
+        prev_evolution: {
+            $exists: false
+        }
+    }
+}, {
+    $lookup: {
+        from: 'samples_pokemon',
+        localField: 'next_evolution.num',
+        foreignField: 'num',
+        as: 'evolutions'
+    }
+}, {
+    $match: {
+        "evolutions.avg_spawns": {
+            $gt: 4
+        }
+    }
+}, {
+    $project: {
+        _id: 0,
+        name: 1,
+        num: 1
+    }
+}])
