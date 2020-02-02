@@ -34,9 +34,10 @@ paymentsRouter.get('/:paymentId', async (req, res) => {
 
 paymentsRouter.post('/:paymentId/reimburse', async (req, res) => {
   const { paymentId } = req.params;
+  const { amount } = req.body;
   try {
     const payment = await Payment.findById(parseInt(paymentId, 10));
-    await payment.reimburse();
+    await payment.reimburse(amount);
     res.json({ payment });
   } catch (err) {
     res.status(404).json({

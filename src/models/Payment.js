@@ -46,12 +46,19 @@ class Payment {
     return this.save();
   }
 
-  async reimburse() {
+  async reimburse(amount) {
     const gateway = paymentGateways[this.gateway];
     try {
-      await gateway.reimburse();
-      this.status = 'reimburse';
-      this.reimburseDate = new Date();
+      if (amount) {
+        await gateway.partialReimburse(this.gatewayPaymentId, amount);
+        this.status = 'partial-reimburse';
+        this.reimburseAmount = amount;
+        this.reimburseDate = new Date();
+      } else {
+        await gateway.reimburse(this.gatewayPaymentId);
+        this.status = 'reimburse';
+        this.reimburseDate = new Date();
+      }
     } catch (err) {
       this.err = 'Error while reimburse payment';
       this.status = 'error';
