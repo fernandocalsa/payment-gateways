@@ -27,7 +27,7 @@ This gateway is pretty straight forward, it has three methods, one for executing
 ### Gateway 2
 This gateway is a bit weirder than the previous one. It allows you to create a payment with `launchPayment` but when this function resolves, the payment could not be fully processed. If you want to know if the payment was processed you should use the method `getPayment` in order to retrieve the payment status. The payment is set to wait 4 seconds until it is approved.
 
-The `reimburse` method is similar to `launchPayment`, you need to use the `getPayment` method if you want to know if the reimbursement was successful. The reimbursement is set to wait 2 seconds until it is completed.
+The `reimburse` method is similar to `launchPayment`, you need to use the `getPayment` method if you want to know if the reimbursement was successful. The reimbursement is set to wait 2 seconds until it is completed.
 
 This gateway does not have the ability to make partial reimbursements.
 
