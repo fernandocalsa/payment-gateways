@@ -16,6 +16,7 @@
     "eslint-plugin-import": "^2.20.0"
   },
   "dependencies": {
+    "express": "^4.17.1",
     "uuid": "^3.4.0"
   }
 }
