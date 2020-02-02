@@ -10,11 +10,33 @@ class Payment {
 
   save() {
     if (!this.id) {
-      this.id = payments[payments.length - 1] + 1;
+      const lastPayment = payments[payments.length - 1];
+      if (lastPayment) {
+        this.id = lastPayment.id + 1;
+      } else {
+        this.id = 1;
+      }
       payments.push(this);
+      return Promise.resolve(this);
     }
-    payments[this.id] = this;
+    const paymentIdx = payments.findIndex(({ id }) => id === this.id);
+    payments[paymentIdx] = this;
     return Promise.resolve(this);
+  }
+
+  async execute(gateway) {
+    try {
+      const gatewayPaymentId = await gateway.pay();
+      this.gatewayPaymentId = gatewayPaymentId;
+      this.gateway = gateway.id;
+      this.status = 'paid';
+      this.datePaid = new Date();
+    } catch (err) {
+      this.err = 'Error while executing payment';
+      this.status = 'error';
+      this.errDate = new Date();
+    }
+    return this.save();
   }
 
   static findAll() {
